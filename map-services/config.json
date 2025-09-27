@@ -1,0 +1,19 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 50054,
+    "env": "dev"
+  },
+  "postgres": {
+    "host": "postgres_location",
+    "port": 5435,
+    "user": "relationskat123",
+    "password": "relations123mu",
+    "data_base": "location_db",
+    "max_connect_retry": 5,
+    "time_to_wait_for_retry": 2,
+    "time_for_connection": 5,
+    "run_migrations": true,
+    "migrations_path": "file:///usr/src/app/migrations"
+  }
+}

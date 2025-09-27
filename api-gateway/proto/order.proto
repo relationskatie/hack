@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package services;
+
+option go_package = "./proto;order";
+
+
+// Статусы заказа
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  CONFIRMED = 2;
+  DONE = 3;
+  CANCELED = 4;
+}
+
+// ==================== Заказы ====================
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder (GetOrderRequest) returns (GetOrderResponse);
+  rpc GetOrderByID(GetOrderByIDRequest) returns (GetOrderByIDResponse);
+  rpc CancelOrder (CancelOrderRequest) returns (CancelOrderResponse);
+  rpc UpdateOrderStatus (UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  
+
+  rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);          // Все заказы
+  rpc ListMyOrders (ListMyOrdersRequest) returns (ListMyOrdersResponse);    // Только мои заказы
+  // Методы для услуг
+  rpc ListServices (ListServicesRequest) returns (ListServicesResponse);
+  rpc GetService (GetServiceRequest) returns (GetServiceResponse);
+  rpc DeleteService (DeleteServiceRequest) returns (DeleteServiceResponse);
+  rpc UpdateService (UpdateServiceRequest) returns (UpdateServiceResponse);
+  rpc CreateService (CreateServiceRequest) returns (CreateServiceResponse);
+
+}
+
+message TimeSlot {
+  string start_time = 1;  
+  string end_time = 2;    
+  bool is_booked = 3;    
+  string date = 4;
+}
+
+message ServiceInfo {
+  string id = 1;
+  string tittle = 2;
+  double price = 3;
+  string description = 4;
+  bool need_schedule = 5;
+  repeated TimeSlot schedule = 6; 
+}
+
+
+message GetOrderByIDRequest {
+  string order_id = 1;
+}
+
+message GetOrderByIDResponse {
+  string order_id = 1;
+  string customer_id = 2;
+  string service_id = 3;
+  string description = 4;
+  string location = 5;
+  string scheduled_start_time = 6;
+  string scheduled_end_time = 7;
+  OrderStatus status = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message CreateOrderRequest {
+  string customer_id = 1;
+  string service_id = 2;
+  string description = 3;
+  string location = 4;
+  string scheduled_start_time = 5;
+  string scheduled_end_time = 6;   
+  string date = 7;
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  ShortServiceInfo service = 2;
+  OrderStatus status = 3;
+  string created_at = 4;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+  string customer_id = 2;
+}
+
+message GetOrderResponse {
+  string order_id = 1;
+  string customer_id = 2;
+  string service_id = 3;
+  string description = 4;
+  string location = 5;
+  string scheduled_start_time = 6;
+  string scheduled_end_time = 7;
+  OrderStatus status = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+// ==================== Услуги ====================
+
+message ListServicesRequest {
+  int32 limit = 1;  
+  int32 offset = 2; 
+}
+
+message ListServicesResponse {
+  repeated ShortServiceInfo services = 1;
+  int32 total_count = 2;
+}
+
+message ShortServiceInfo{
+  string id = 1;
+  string tittle = 2;
+  double price = 3;
+  string description = 4;
+  bool need_schedule = 5;
+}
+
+message GetServiceRequest {
+  string service_id = 1;
+}
+
+message GetServiceResponse {
+  ServiceInfo service = 1;
+}
+
+message DeleteServiceRequest {
+  string service_id = 1;
+}
+
+message DeleteServiceResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateServiceRequest {
+  string service_id = 1;
+  string tittle = 2;
+  double price = 3;
+  string description = 4;
+}
+
+message UpdateServiceResponse {
+  string message = 1;
+}
+message CreateServiceRequest {
+  string tittle = 1;                // Тип услуги
+  double price = 2;                    // Цена
+  string description = 3;
+  bool need_schedule = 4;              // Описание
+  repeated TimeSlot schedule = 5;      // Слоты времени для услуги
+}
+
+message CreateServiceResponse {
+  ServiceInfo service = 1;             // Созданная услуга с расписанием
+}
+
+// ==================== Заказы ====================
+
+message CancelOrderRequest {
+  string order_id = 1;
+  string user_id = 2;
+}
+
+message CancelOrderResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateOrderStatusRequest {
+  string order_id = 1;
+  OrderStatus status = 2;
+}
+
+message UpdateOrderStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListOrdersRequest {
+  int32 limit = 1;       
+  int32 offset = 2;  
+}
+
+message ListOrdersResponse {
+  repeated GetOrderResponse orders = 1;
+  int32 total_count = 2; 
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListMyOrdersRequest {
+  string customer_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListMyOrdersResponse {
+  repeated GetOrderResponse orders = 1;
+  int32 total_count = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}

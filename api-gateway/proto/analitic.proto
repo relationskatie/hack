@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package analytics.v1;
+
+option go_package = "proto/analytics; analytics";
+
+
+
+// ===== Общие типы
+
+message DateRange {
+  string from_date = 1; // ISO: YYYY-MM-DD
+  string to_date = 2;
+}
+
+message Meta {
+  string group_by = 1;
+  bool admin       = 2; // true = админ (с деньгами)
+}
+
+message Point {
+  // Один из ключей периода: для штрафов/эвакуаций используем dt,
+  // для МВД — period (первое число месяца).
+  oneof bucket {
+    string dt     = 1; // YYYY-MM-DD
+    string period = 2; // YYYY-MM-01
+  }
+  int64 value = 3;
+}
+
+message Series { repeated Point points = 1; }
+
+message Aggregates {
+  // Суммы по сериям: key = имя серии (например "evacuations")
+  map<string, int64> sum = 1;
+  // Средние по сериям (используется только для trucks_on_line и т.п.)
+  map<string, double> avg = 2;
+}
+
+message KPI {
+  double collection_rate = 1; // штрафы: sum(collected)/sum(imposed)
+}
+
+// ===== Ответы виджетов
+message FinesResponse {
+  map<string, Series> series = 1;    // violations_delta, rulings_delta, (admin) imposed_delta, collected_delta
+  Aggregates aggregates       = 2;   // sum.*
+  KPI kpi                     = 3;   // пустой, если гость
+  Meta meta                   = 4;   // group_by, admin
+}
+
+message EvacResponse {
+  map<string, Series> series = 1;    // trucks_on_line, trips, evacuations, (admin) impound_income
+  Aggregates aggregates       = 2;   // sum.*, avg.trucks_on_line
+  Meta meta                   = 3;
+}
+
+message DtpResponse {
+  map<string, Series> series = 1;    // injured_accidents, fatalities, injured_persons
+  Aggregates aggregates       = 2;   // sum.*
+  Meta meta                   = 3;   // group_by=MONTH
+}
+
+// ===== Сравнение периодов (A vs B)
+message PeriodAgg {
+  string from_date  = 1;  // YYYY-MM-DD
+  string to_date    = 2;
+  int64 sum    = 3;
+  // Для дневных рядов avg = sum / days; для МВД (месяц) = null → передаём 0 и is_set=false
+  double avg   = 4;
+  bool avg_set = 5;  // true если avg задан
+}
+
+message Diff {
+  int64 abs  = 1;    // sumA - sumB
+  double rel = 2;    // (sumA - sumB) / sumB; если sumB=0 → rel_set=false
+  bool rel_set = 3;
+}
+
+message CompareResponse {
+  string metric  = 1;  // evacuations | fatalities | violations_delta | ...
+  PeriodAgg period_a = 2;
+  PeriodAgg period_b = 3;
+  Diff diff = 4;
+  bool admin = 5;      // режим
+}
+
+// ===== Запросы
+message FinesRequest {
+  DateRange range = 1;
+  string group_by = 2;  // day|week|month
+  bool public = 3;       // true = гость
+}
+
+message EvacRequest {
+  DateRange range = 1;
+  string group_by = 2;
+  bool public = 3;
+}
+
+message DtpRequest {
+  DateRange range = 1;   // group_by игнорируется, всегда month
+}
+
+message CompareRequest {
+  string metric = 1;     // белый список на сервере
+  DateRange period_a = 2;
+  DateRange period_b = 3;
+  bool public = 4;
+}
+
+
+
+message FilePayload {
+  string filename = 1;  // например "ЦОДД.xlsx" или "mvd_data.csv"
+  bytes  content  = 2;  // бинарное содержимое файла
+}
+
+message ImportBytesRequest {
+  repeated FilePayload files = 1;
+  // Стратегия: "append" (вставка/обновление), "replace" (полная замена таблиц)
+  string mode = 2; // default: "append"
+}
+
+message ImportBytesResponse {
+  string status = 1; // "ok"
+  string summary_json = 2; // JSON со статистикой rows/range/warnings
+}
+
+
+
+
+//------------------------Forecast-------------------------------
+
+message GetForecastRequest {
+  string metric = 1; // "injured_accidents" или "evacuations"
+  int32 horizon = 4;
+}
+
+
+message GetForecastResponse {
+  DateRange train_range = 1; // Фактический диапазон данных, использованных для обучения
+  string freq = 2; // "month" или "day"
+  repeated ForecastPoint forecast = 3; // Прогнозируемые точки
+  repeated HistoryPoint last_history = 4; // Последние точки из истории
+  MetaInfo meta = 5; // Мета-информация
+}
+
+// Сообщение для одной точки прогноза
+message ForecastPoint {
+  string ds = 1; // Дата в формате "YYYY-MM-DD"
+  double yhat = 2; // Прогнозируемое значение
+  double yhat_lower = 3; // Нижняя граница доверительного интервала
+  double yhat_upper = 4; // Верхняя граница доверительного интервала
+}
+
+// Сообщение для одной точки истории
+message HistoryPoint {
+  string ds = 1; // Дата в формате "YYYY-MM-DD"
+  double y = 2; // Фактическое значение
+}
+
+// Сообщение для мета-информации
+message MetaInfo {
+  string metric = 1; // Использованная метрика
+  int32 horizon = 2; // Горизонт прогноза
+  optional CrossValidationInfo cv = 3; // Информация о кросс-валидации (опционально, если debug=true)
+}
+
+// Сообщение для информации о кросс-валидации
+message CrossValidationInfo {
+  double mae = 1; // Средняя абсолютная ошибка
+  double smape = 2; // Симметричное среднее абсолютное процентное отклонение
+  double mape = 3; // Среднее абсолютное процентное отклонение (опционально, как в описании)
+}
+
+
+
+// ===== Сервис
+service AnalyticsService {
+  rpc GetFines(FinesRequest)   returns (FinesResponse);
+  rpc GetEvac(EvacRequest)     returns (EvacResponse);
+  rpc GetDtp(DtpRequest)       returns (DtpResponse);
+  rpc Compare(CompareRequest)  returns (CompareResponse);
+  rpc GetForecast(GetForecastRequest) returns (GetForecastResponse);
+  rpc ImportBytes(ImportBytesRequest) returns (ImportBytesResponse);
+
+}

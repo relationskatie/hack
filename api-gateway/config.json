@@ -1,0 +1,23 @@
+{
+  "api_gateway": {
+    "host": "0.0.0.0",
+    "port": 8061,
+    "env": "dev"
+  },
+  "content_service": {
+    "host": "content_service",
+    "port": 50051
+  },
+  "order_service":{
+    "host": "order_services",
+    "port": 50053
+  },
+  "analitic_service":{
+    "host": "analitic_service",
+    "port": 50052
+  },
+  "location_service":{
+    "host": "location_sevices",
+    "port": 50054
+  }
+}

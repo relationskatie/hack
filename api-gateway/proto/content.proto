@@ -1,0 +1,361 @@
+syntax = "proto3";
+
+package content;
+
+option go_package = "proto/content; content";
+
+service ContentService {
+  // News
+  rpc CreateNews (CreateNewsRequest) returns (CreateNewsResponse);
+  rpc GetNews (GetNewsRequest) returns (GetNewsResponse);
+  rpc UpdateNews (UpdateNewsRequest) returns (UpdateNewsResponse);
+  rpc DeleteNews (DeleteNewsRequest) returns (DeleteNewsResponse);
+  rpc ListNews (ListNewsRequest) returns (ListNewsResponse);
+  rpc GetCountNews (Empty) returns (GetCountNewsResponse);
+
+  // Vacancy
+  rpc CreateVacancy (CreateVacancyRequest) returns (CreateVacancyResponse);
+  rpc GetVacancy (GetVacancyRequest) returns (GetVacancyResponse);
+  rpc UpdateVacancy (UpdateVacancyRequest) returns (UpdateVacancyResponse);
+  rpc DeleteVacancy (DeleteVacancyRequest) returns (DeleteVacancyResponse);
+  rpc ListAllVacancies (ListVacanciesRequest) returns (ListVacanciesResponse);
+  rpc ListActiveVacancies (ListVacanciesRequest) returns (ListVacanciesResponse);
+  rpc GetCountVacancies (Empty) returns (GetCountVacanciesResponse);
+
+  // Documents
+  rpc CreateDocument (CreateDocumentRequest) returns (CreateDocumentResponse);
+  rpc GetDocument (GetDocumentRequest) returns (GetDocumentResponse);
+  rpc ListDocuments (ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc DeleteDocument (DeleteDocumentRequest) returns (DeleteDocumentResponse);
+
+  //Conntact
+  rpc CreateContact(ContactRequest) returns (Contact);
+  rpc GetContact(ContactId) returns (Contact);
+  rpc ListContacts(ContactListRequest) returns (ContactListResponse);
+  rpc UpdateContact(Contact) returns (Contact);
+  rpc DeleteContact(ContactId) returns (DeleteContactResponse);
+
+  //Project
+  rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse);
+  rpc GetProject(GetProjectRequest) returns (GetProjectResponse);
+  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse);
+  rpc DeleteProject(DeleteProjectRequest) returns (DeleteProjectResponse);
+  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
+}
+
+// === NEWS ===
+
+
+
+message CreateNewsResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string file_url = 6;
+}
+
+message CreateNewsRequest {
+  string title = 1;
+  string content = 2;
+  string uploaded_by = 3;
+  string filename = 4;
+  bytes file = 5;
+}
+
+
+message GetNewsRequest {
+  string id = 1;
+}
+
+message GetNewsResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  bytes file = 7;      
+  string filename = 8;
+}
+
+
+
+message UpdateNewsRequest {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string uploaded_by = 4;
+}
+
+message UpdateNewsResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+
+
+message DeleteNewsRequest {
+  string id = 1;
+}
+
+message DeleteNewsResponse {
+  string id = 1;
+  string message = 2;
+}
+
+
+message ListNewsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListNewsResponse {
+  repeated GetNewsResponse items = 1;
+}
+
+
+message GetCountNewsResponse {
+  int64 count = 1;
+}
+// === VACANCY ===
+
+
+message CreateVacancyRequest {
+  string position  = 1;
+  string description = 2;
+  string salary = 3;
+  bool is_active = 4;
+}
+
+message CreateVacancyResponse {
+  string id = 1;
+  string position  = 2;
+  string description = 3;
+  string salary = 4;
+  bool is_active = 5;
+  string published_at  = 6;
+}
+
+
+
+message GetVacancyRequest {
+  string id = 1;
+}
+
+message GetVacancyResponse {
+  string id = 1;
+  string position = 2;
+  string description = 3;
+  string salary = 4;
+  bool is_active = 5;
+  string published_at  = 6;
+}
+
+
+
+message UpdateVacancyRequest {
+  string id = 1;
+  string position = 2;
+  string description = 3;
+  string salary = 4;
+  bool is_active = 5;
+}
+
+message UpdateVacancyResponse {
+  string id = 1;
+  string position = 2;
+  string description = 3;
+  string salary = 4;
+  bool is_active = 5;
+  string published_at = 6;
+}
+
+
+message DeleteVacancyRequest {
+  string id = 1;
+}
+
+message DeleteVacancyResponse {
+  string id = 1;
+  string message = 2;
+}
+
+
+
+message ListVacanciesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListVacanciesResponse {
+  repeated GetVacancyResponse items = 1;
+}
+
+message GetCountVacanciesResponse {
+  int64 count = 1;
+}
+
+
+// =======Documents======
+
+message Document {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  bytes file = 7;
+  string filename = 8;
+}
+
+message CreateDocumentRequest {
+  string title = 1;
+  string description = 2;
+  string uploaded_by = 3;
+  bytes file = 4;
+  string filename = 5;
+}
+
+message CreateDocumentResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string filename = 6;
+  string file_url = 7;
+}
+
+message GetDocumentRequest {
+  string id = 1;
+}
+
+message GetDocumentResponse {
+  Document document = 1;
+}
+
+message ListDocumentsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListDocumentsResponse {
+  repeated Document items = 1;
+}
+
+message DeleteDocumentRequest {
+  string id = 1;
+}
+
+message DeleteDocumentResponse {
+  string message = 1;
+}
+
+
+message Contact {
+  string id = 1;
+  string title = 2;
+  repeated string phones = 3;
+  repeated string emails = 4;
+  repeated string addresses = 5;
+}
+
+message ContactRequest{
+  string title = 1;
+  repeated string phones = 2;
+  repeated string emails = 3;
+  repeated string addresses = 4;
+}
+
+message ContactId {
+  string id = 1;
+}
+
+message DeleteContactResponse{
+  string message = 1;
+}
+
+message ContactListRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ContactListResponse {
+  repeated Contact items = 1;
+}
+
+//projects
+
+message CreateProjectRequest {
+  string title = 1;
+  string description = 2;
+  string uploaded_by = 3;
+  string filename = 4;
+  bytes file = 5;
+}
+
+message CreateProjectResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string file_url = 6;
+}
+
+message GetProjectRequest {
+  string id = 1;
+}
+
+message GetProjectResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  bytes file = 7;
+  string filename = 8;
+}
+
+message UpdateProjectRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+}
+
+message UpdateProjectResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message DeleteProjectRequest {
+  string id = 1;
+}
+
+message DeleteProjectResponse {
+  string id = 1;
+  string message = 2;
+}
+
+message ListProjectsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListProjectsResponse {
+  repeated GetProjectResponse items = 1;
+}
+
+message Empty {}
